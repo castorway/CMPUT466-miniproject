@@ -1,19 +1,21 @@
 import pandas as pd
 import itertools
-import linear_regression
-import logistic_regression
-import k_nearest_neighbors
-import multi_layer_perceptron
 from data import Dataset
 import os
 import numpy as np
+from pathlib import Path
 
-# get data
-dataset = Dataset(
-    "./Miniproject/cifar-10-batches-py",
-    select_classes=[3, 5],
-    seed=0
-)
+import models.k_nearest_neighbors as k_nearest_neighbors
+import models.logistic_regression as logistic_regression
+import models.multi_layer_perceptron as multi_layer_perceptron
+import models.naive_bayes as naive_bayes
+
+main_dir = Path(__file__).parent
+results_dir = main_dir / "results"
+data_dir = main_dir / "cifar-10-batches-py"
+os.makedirs(results_dir, exist_ok=True)
+
+# print(main_dir, results_dir, data_dir)
 
 def get_by_hparams(hparams, df):
     mask =  False
@@ -29,10 +31,12 @@ def tune(module):
     cols = list(module.grid.keys()) + ["train_acc", "val_acc", "test_acc"]
 
     # load csv
-    csv_name = f"{module.__name__}_tuning.csv"
+    csv_name = results_dir / f"{module.name}_tuning.csv"
     if os.path.exists(csv_name):
+        print(f"Reading existing results from {csv_name}.")
         df = pd.read_csv(csv_name, index_col=None)
     else:
+        print(f"Couldn't find {csv_name}.")
         df = pd.DataFrame(columns=cols)
 
     # get list of hyperparam combinations to try
@@ -48,7 +52,7 @@ def tune(module):
             continue
         
         # create model from hparams
-        model = module.Model(**hparams)
+        model = module.Model(results_dir, **hparams)
         
         # run the model with these hyperparams
         train_acc, val_acc = model.train(dataset)
@@ -61,14 +65,14 @@ def tune(module):
         model.save()
 
     # save csv back
-    df.to_csv(f"{module.__name__}_tuning.csv", index=False)
+    df.to_csv(csv_name, index=False)
 
     return df
 
 
 def select_and_test(module):
     # load csv
-    csv_name = f"{module.__name__}_tuning.csv"
+    csv_name = results_dir / f"{module.name}_tuning.csv"
     df = pd.read_csv(csv_name, index_col=None)
 
     # pick row with best val_acc
@@ -84,7 +88,7 @@ def select_and_test(module):
 
         # test model
         hparams_dict = df[df.index == idx].to_dict(orient="records")[0]
-        model = module.Model(**hparams_dict)
+        model = module.Model(results_dir, **hparams_dict)
         model.load() # load any data if exists
         test_acc = model.test(dataset)
 
@@ -94,7 +98,7 @@ def select_and_test(module):
         print()
 
     # save csv back
-    df.to_csv(f"{module.__name__}_tuning.csv", index=False)
+    df.to_csv(csv_name, index=False)
 
 
 def title_print(s):
@@ -102,6 +106,13 @@ def title_print(s):
 
 
 if __name__ == "__main__":
+
+    # get data
+    dataset = Dataset(
+        data_dir,
+        # select_classes=[3, 5],
+        seed=0
+    )
 
     # linear regression...
     # title_print("TUNING LINEAR REGRESSION")
@@ -118,17 +129,17 @@ if __name__ == "__main__":
     # title_print("TESTING LOGISTIC REGRESSION")
     # select_and_test(logistic_regression)
 
+    # k nearest neighbours...
+    title_print("TUNING K NEAREST NEIGHBOURS")
+    tune(k_nearest_neighbors)
+
+    title_print("TESTING K NEAREST NEIGHBOURS")
+    select_and_test(k_nearest_neighbors)
+
     # CNN...
-    # title_print("TUNING K NEAREST NEIGHBOURS")
-    # tune(k_nearest_neighbors)
+    # title_print("TUNING MULTI LAYER PERCEPTRON")
+    # tune(multi_layer_perceptron)
 
-    # title_print("TESTING K NEAREST NEIGHBOURS")
-    # select_and_test(k_nearest_neighbors)
-
-    # CNN...
-    title_print("TUNING MULTI LAYER PERCEPTRON")
-    tune(multi_layer_perceptron)
-
-    title_print("TESTING MULTI LAYER PERCEPTRON")
-    select_and_test(multi_layer_perceptron)
+    # title_print("TESTING MULTI LAYER PERCEPTRON")
+    # select_and_test(multi_layer_perceptron)
 

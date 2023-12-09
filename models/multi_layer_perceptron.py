@@ -20,7 +20,9 @@ Hyperparameters:
 
 
 class Model():
-    def __init__(self, activation="identity", batch_size=8, lr=0.001, n_layers=1, n_layer_neurons=10, **kwargs):
+    def __init__(self, results_dir, activation="identity", batch_size=8, lr=0.001, n_layers=1, n_layer_neurons=10, **kwargs):
+        self.results_dir = results_dir
+
         # check hparams
         assert activation in ["identity", "logistic", "tanh", "relu"]
         assert batch_size > 1
@@ -37,7 +39,7 @@ class Model():
 
         self.model = None
 
-        self.filename_root = f"multi_layer_perceptron/model_act{self.activation}_b{self.batch_size}_lr{self.lr}_nl{self.n_layers}_nn{self.n_layer_neurons}"
+        self.filename_root = self.results_dir / f"multi_layer_perceptron/model_act{self.activation}_b{self.batch_size}_lr{self.lr}_nl{self.n_layers}_nn{self.n_layer_neurons}"
         self.filename = self.filename_root + ".sav"
 
 
@@ -83,7 +85,7 @@ class Model():
 
     def save(self):        
         # save model in logistic_regression dir
-        os.makedirs("k_nearest_neighbors", exist_ok=True)
+        os.makedirs(self.filename.parent, exist_ok=True)
         joblib.dump(self.model, self.filename)
 
 
@@ -93,12 +95,14 @@ class Model():
 
 
 grid = {
-    "activation": ["logistic", "tanh", "relu"],
-    "batch_size": [16, 64, 256],
+    "activation": ["logistic", "relu"],
+    "batch_size": [16, 64],
     "lr": [0.0001, 0.001, 0.01],
     # "n_layers": [1, 2, 3],
     # "n_hidden_neurons": [5, 10, 20] # keep this small
 }
+name = "multi_layer_perceptron"
+
 
 if __name__ == "__main__":
 

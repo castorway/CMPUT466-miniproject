@@ -15,7 +15,9 @@ Predict class from image data using a logistic regression model.
 
 
 class Model():
-    def __init__(self, fit_intercept=False, regularization="none", reg_c=1.0, **kwargs):
+    def __init__(self, results_dir, fit_intercept=False, regularization="none", reg_c=1.0, **kwargs):
+        self.results_dir = results_dir
+
         # check hparams
         # assert fit_intercept in [True, False]
         assert regularization in ["none", "L1", "L2", "elastic"]
@@ -34,7 +36,7 @@ class Model():
 
         self.model = None
 
-        self.filename = f"logistic_regression/model_fi{self.fit_intercept}_reg{self.regularization}_c{self.reg_c}.sav"
+        self.filename = self.results_dir / f"logistic_regression/model_fi{self.fit_intercept}_reg{self.regularization}_c{self.reg_c}.sav"
 
 
     def train(self, dataset):
@@ -78,7 +80,7 @@ class Model():
 
     def save(self):        
         # save model in logistic_regression dir
-        os.makedirs("logistic_regression", exist_ok=True)
+        os.makedirs(self.filename.parent, exist_ok=True)
         joblib.dump(self.model, self.filename)
 
 
@@ -90,8 +92,10 @@ class Model():
 grid = {
     "fit_intercept": [False, True],
     "regularization": ["none", "L1", "L2"],
-    "reg_c": [0.3, 1.0, 3]
+    # "reg_c": [0.3, 1.0, 3]
 }
+name = "logistic_regression"
+
 
 if __name__ == "__main__":
 
@@ -104,3 +108,7 @@ if __name__ == "__main__":
 
     model = Model()
     model.train(dataset)
+    model.save()
+    
+    model.load()
+    model.test(dataset)

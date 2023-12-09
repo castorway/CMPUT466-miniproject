@@ -15,11 +15,12 @@ Predict class from image data using a Gaussian Naive Bayes model.
 
 
 class Model():
-    def __init__(self, **kwargs):
+    def __init__(self, results_dir, **kwargs):
+        self.results_dir = results_dir
 
         self.model = None
 
-        self.filename_root = f"naive_bayes/model"
+        self.filename_root = self.results_dir / f"naive_bayes/model"
         self.filename = self.filename_root + ".sav"
 
 
@@ -35,8 +36,9 @@ class Model():
 
         print(f"> Model fit in {t:.2f} s.")
 
-        train_pred = self.model.predict(dataset.train_data['data'])
-        train_acc = utils.calc_accuracy(train_pred, dataset.train_data['labels'])
+        # train_pred = self.model.predict(dataset.train_data['data'])
+        # train_acc = utils.calc_accuracy(train_pred, dataset.train_data['labels'])
+        train_acc = 0 # ignore
 
         val_pred = self.model.predict(dataset.val_data['data'])
         val_acc = utils.calc_accuracy(val_pred, dataset.val_data['labels'])
@@ -59,7 +61,7 @@ class Model():
 
     def save(self):        
         # save model in logistic_regression dir
-        os.makedirs("k_nearest_neighbors", exist_ok=True)
+        os.makedirs(self.filename.parent, exist_ok=True)
         joblib.dump(self.model, self.filename)
 
 
@@ -71,6 +73,8 @@ class Model():
 grid = {
     "": []
 }
+name = "naive_bayes"
+
 
 if __name__ == "__main__":
 

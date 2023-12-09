@@ -19,7 +19,9 @@ Hyperparameters:
 
 
 class Model():
-    def __init__(self, k=3, weights="uniform", **kwargs):
+    def __init__(self, results_dir, k=3, weights="uniform", **kwargs):
+        self.results_dir = results_dir
+        
         # check hparams
         assert k >= 1
         assert weights in ["uniform", "distance"]
@@ -29,7 +31,7 @@ class Model():
 
         self.model = None
 
-        self.filename = f"k_nearest_neighbors/model_k{self.k}_w{self.weights}.sav"
+        self.filename = self.results_dir / f"k_nearest_neighbors/model_k{self.k}_w{self.weights}.sav"
 
 
     def train(self, dataset):
@@ -49,7 +51,7 @@ class Model():
 
         train_pred = self.model.predict(dataset.train_data['data'])
         train_acc = utils.calc_accuracy(train_pred, dataset.train_data['labels'])
-
+        
         val_pred = self.model.predict(dataset.val_data['data'])
         val_acc = utils.calc_accuracy(val_pred, dataset.val_data['labels'])
 
@@ -71,7 +73,7 @@ class Model():
 
     def save(self):        
         # save model in logistic_regression dir
-        os.makedirs("k_nearest_neighbors", exist_ok=True)
+        os.makedirs(self.filename.parent, exist_ok=True)
         joblib.dump(self.model, self.filename)
 
 
@@ -81,9 +83,11 @@ class Model():
 
 
 grid = {
-    "k": [1, 3, 5, 7, 10],
+    "k": [1, 3, 5, 7],
     "weights": ["uniform", "distance"],
 }
+name = "k_nearest_neighbors"
+
 
 if __name__ == "__main__":
 
