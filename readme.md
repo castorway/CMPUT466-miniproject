@@ -4,7 +4,7 @@ Code to load and preprocess the CIFAR 10 dataset, and run several models from sc
 
 ## Dataset
 
-I used the [CIFAR-10 dataset](https://www.cs.toronto.edu/~kriz/cifar.html) for this assignment. To reproduce my results, download the dataset ("CIFAR-10 python version" on the webpage), untar it, and put the `cifar-10-batches-py` directory inside this directory (i.e. `CMPUT 466 Miniproject/cifar-10-batches-py`).
+I used the [CIFAR-10 dataset](https://www.cs.toronto.edu/~kriz/cifar.html) for this assignment. To reproduce my results, download the dataset ("CIFAR-10 python version" on the webpage), untar it, and put the `cifar-10-batches-py` directory inside this directory (i.e. `CMPUT466-miniproject/cifar-10-batches-py`).
 
 ## Dependencies
 
@@ -18,4 +18,4 @@ This script creates the required directories and runs all the models with all th
 
 ## Results
 
-Results are stored in the `CMPUT 466 Miniproject/results` directory. I have uploaded the CSV files generated to this repository, but not the saved model files.
+Results are stored in the `CMPUT466-miniproject/results` directory. I have uploaded the CSV files generated to this repository, but not the saved model files.
