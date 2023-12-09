@@ -1,12 +1,10 @@
-import numpy as np
 from sklearn.naive_bayes import GaussianNB
 from time import time
-import pandas as pd
-import utils
-import json
 import os
 import joblib
+from pathlib import Path
 
+import utils
 from data import Dataset
 
 """
@@ -21,7 +19,7 @@ class Model():
         self.model = None
 
         self.filename_root = self.results_dir / f"naive_bayes/model"
-        self.filename = self.filename_root + ".sav"
+        self.filename = Path(str(self.filename_root) + ".sav")
 
 
     def train(self, dataset):
@@ -36,9 +34,8 @@ class Model():
 
         print(f"> Model fit in {t:.2f} s.")
 
-        # train_pred = self.model.predict(dataset.train_data['data'])
-        # train_acc = utils.calc_accuracy(train_pred, dataset.train_data['labels'])
-        train_acc = 0 # ignore
+        train_pred = self.model.predict(dataset.train_data['data'])
+        train_acc = utils.calc_accuracy(train_pred, dataset.train_data['labels'])
 
         val_pred = self.model.predict(dataset.val_data['data'])
         val_acc = utils.calc_accuracy(val_pred, dataset.val_data['labels'])
@@ -71,13 +68,12 @@ class Model():
 
 
 grid = {
-    "": []
+    "placeholder": [None]
 }
 name = "naive_bayes"
 
 
 if __name__ == "__main__":
-
     # get data
     dataset = Dataset(
         "./Miniproject/cifar-10-batches-py",

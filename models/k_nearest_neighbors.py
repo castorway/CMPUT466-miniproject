@@ -1,9 +1,6 @@
-import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from time import time
-import pandas as pd
 import utils
-import json
 import os
 import joblib
 
@@ -11,10 +8,6 @@ from data import Dataset
 
 """
 Predict class from image data using a K-nearest-neighbours model.
-
-Hyperparameters:
-- k [1, inf)
-- weights {"uniform", "distance"}
 """
 
 

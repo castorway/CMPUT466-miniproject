@@ -1,42 +1,36 @@
-import numpy as np
-from sklearn.linear_model import LinearRegression, Lasso, Ridge
+from sklearn.linear_model import RidgeClassifier
 from time import time
-import pandas as pd
 import utils
-
-from data import Dataset
+import os
+import joblib
 
 """
-Predict class from image data using a linear regression model with thresholding.
-
-Hyperparameters:
-- threshold [-1, 1]
-- regularization {"none", "L1", "L2"}
+Predict class from image data using a linear regression model.
 """
-
-def threshold(pred, thresh):
-    return np.where(pred < thresh, -1, 1)
 
 
 class Model():
-    def __init__(self, threshold=0, regularization="none", **kwargs):
-        self.threshold = threshold
-        self.regularization = regularization
+    def __init__(self, results_dir, alpha=1.0, fit_intercept=False, **kwargs):
+        self.results_dir = results_dir
+        
+        self.alpha = alpha
+        self.fit_intercept = fit_intercept
 
         # check hparams
-        assert -1 <= self.threshold <= 1
-        assert self.regularization in ["none", "L1", "L2"]
+        assert 0.0 < self.alpha
+        assert self.fit_intercept in [True, False]
 
         self.model = None
 
+        self.filename = self.results_dir / f"linear_regression/model_fi{self.fit_intercept}_a{self.alpha}.sav"
+
+
     def train(self, dataset):
         # create model
-        if self.regularization == "none":
-            self.model = LinearRegression()
-        elif self.regularization == "L1":
-            self.model = Lasso()
-        elif self.regularization == "L2":
-            self.model = Ridge()
+        self.model = RidgeClassifier(
+            alpha=self.alpha,
+            fit_intercept=self.fit_intercept
+        )
         
         print(f"Fitting model...")
 
@@ -47,11 +41,9 @@ class Model():
         print(f"> Model fit in {t:.2f} s.")
 
         train_pred = self.model.predict(dataset.train_data['data'])
-        train_pred = threshold(train_pred, self.threshold)
         train_acc = utils.calc_accuracy(train_pred, dataset.train_data['labels'])
 
         val_pred = self.model.predict(dataset.val_data['data'])
-        val_pred = threshold(val_pred, self.threshold)
         val_acc = utils.calc_accuracy(val_pred, dataset.val_data['labels'])
 
         print(f"> Train accuracy: {train_acc}, Val accuracy: {val_acc}")
@@ -60,52 +52,27 @@ class Model():
 
 
     def test(self, dataset):
-        # create model
-        if self.regularization == "none":
-            self.model = LinearRegression()
-        elif self.regularization == "L1":
-            self.model = Lasso()
-        elif self.regularization == "L2":
-            self.model = Ridge()
-
-        print(f"Fitting model...")
-
-        # for linear regression we reproduce run by just retraining the model because it's easy
-        t_start = time()
-        self.model.fit(dataset.train_data['data'], dataset.train_data['labels'])
-        t = time() - t_start
-        print(f"> Model fit in {t:.2f} s.")
-
-        train_pred = self.model.predict(dataset.train_data['data'])
-        train_pred = threshold(train_pred, self.threshold)
-        train_acc = utils.calc_accuracy(train_pred, dataset.train_data['labels'])
-
-        val_pred = self.model.predict(dataset.val_data['data'])
-        val_pred = threshold(val_pred, self.threshold)
-        val_acc = utils.calc_accuracy(val_pred, dataset.val_data['labels'])
-
-        print(f"> Train accuracy: {train_acc}, Val accuracy: {val_acc}")
 
         print("Testing model...")
 
         test_pred = self.model.predict(dataset.test_data['data'])
-        test_pred = threshold(test_pred, self.threshold)
         test_acc = utils.calc_accuracy(test_pred, dataset.test_data['labels'])
 
         print(f"> Test accuracy: {test_acc}")
         return test_acc
 
     def save(self):
-        pass
+        # save model in linear_regression dir
+        os.makedirs(self.filename.parent, exist_ok=True)
+        joblib.dump(self.model, self.filename)
 
     def load(self):
-        pass
+        # load model from file
+        self.model = joblib.load(self.filename)
 
 
 grid = {
-    "threshold": [-0.8, -0.5, -0.2, -0.1, 0, 0.1, 0.2, 0.5, 0.8],
-    "regularization": ["none", "L1", "L2"]
+    "alpha": [0.3, 0.7, 1.0, 3.0, 7.0],
+    "fit_intercept": [False, True],
 }
 name = "linear_regression"
-
-

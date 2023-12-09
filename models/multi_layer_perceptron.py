@@ -1,26 +1,19 @@
-import numpy as np
 from sklearn.neural_network import MLPClassifier
 from time import time
-import pandas as pd
 import utils
-import json
 import os
 import joblib
+from pathlib import Path
 
 from data import Dataset
 
 """
 Predict class from image data using a multi-layer perceptron.
-
-Hyperparameters:
-- threshold [-1, 1]
-- regularization {"none", "L1", "L2", "elastic"}
-- reg_c [0.0, inf]
 """
 
 
 class Model():
-    def __init__(self, results_dir, activation="identity", batch_size=8, lr=0.001, n_layers=1, n_layer_neurons=10, **kwargs):
+    def __init__(self, results_dir, activation="identity", batch_size=8, lr=0.001, n_layers=2, n_layer_neurons=10, **kwargs):
         self.results_dir = results_dir
 
         # check hparams
@@ -34,13 +27,14 @@ class Model():
         self.batch_size = batch_size
         self.lr = lr
         self.hidden_layer_sizes = (n_layer_neurons,) * n_layers
+        print(self.hidden_layer_sizes)
         self.n_layers = n_layers
         self.n_layer_neurons = n_layer_neurons
 
         self.model = None
 
         self.filename_root = self.results_dir / f"multi_layer_perceptron/model_act{self.activation}_b{self.batch_size}_lr{self.lr}_nl{self.n_layers}_nn{self.n_layer_neurons}"
-        self.filename = self.filename_root + ".sav"
+        self.filename = Path(str(self.filename_root) + ".sav")
 
 
     def train(self, dataset):

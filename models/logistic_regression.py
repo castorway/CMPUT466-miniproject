@@ -1,13 +1,8 @@
-import numpy as np
 from sklearn.linear_model import LogisticRegression
 from time import time
-import pandas as pd
 import utils
-import json
 import os
 import joblib
-
-from data import Dataset
 
 """
 Predict class from image data using a logistic regression model.
@@ -15,38 +10,32 @@ Predict class from image data using a logistic regression model.
 
 
 class Model():
-    def __init__(self, results_dir, fit_intercept=False, regularization="none", reg_c=1.0, **kwargs):
+    def __init__(self, results_dir, fit_intercept=False, alpha=1.0, **kwargs):
         self.results_dir = results_dir
 
         # check hparams
-        # assert fit_intercept in [True, False]
-        assert regularization in ["none", "L1", "L2", "elastic"]
-        # assert reg_c >= 0.0
+        assert fit_intercept in [True, False]
+        # assert regularization in ["none", "L1", "L2"]
+        assert alpha >= 0.0
+        self.alpha = alpha
 
         self.fit_intercept = fit_intercept
-        self.reg_c = reg_c
-
-        # convert from my format to sklearn's
-        if regularization == "none":
-            self.regularization = None
-        elif regularization == "L1":
-            self.regularization = "l1"
-        elif regularization == "L2":
-            self.regularization = "l2"
+        self.reg_c = 1.0 / (2*self.alpha)
 
         self.model = None
 
-        self.filename = self.results_dir / f"logistic_regression/model_fi{self.fit_intercept}_reg{self.regularization}_c{self.reg_c}.sav"
+        self.filename = self.results_dir / f"logistic_regression/model_fi{self.fit_intercept}_a{self.alpha}.sav"
 
 
     def train(self, dataset):
         # create model
         self.model = LogisticRegression(
-            solver="saga",
             verbose=True,
+            penalty="l2",
+            solver="sag",
             fit_intercept=self.fit_intercept,
             C=self.reg_c,
-            max_iter=100)
+        )
 
         print(f"Fitting model...")
 
@@ -90,25 +79,7 @@ class Model():
 
 
 grid = {
+    "alpha": [0.3, 0.7, 1.0, 3.0, 7.0],
     "fit_intercept": [False, True],
-    "regularization": ["none", "L1", "L2"],
-    # "reg_c": [0.3, 1.0, 3]
 }
 name = "logistic_regression"
-
-
-if __name__ == "__main__":
-
-    # get data
-    dataset = Dataset(
-        "./Miniproject/cifar-10-batches-py",
-        # select_classes=[3, 5],
-        seed=0
-    )
-
-    model = Model()
-    model.train(dataset)
-    model.save()
-    
-    model.load()
-    model.test(dataset)

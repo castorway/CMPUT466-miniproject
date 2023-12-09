@@ -1,0 +1,9 @@
+k,weights,train_acc,val_acc,test_acc
+1,uniform,1.0,0.3671,
+1,distance,1.0,0.3671,
+3,uniform,0.60095,0.3524,
+3,distance,1.0,0.3739,
+5,uniform,0.5324,0.3572,
+5,distance,1.0,0.3796,0.3728
+7,uniform,0.490425,0.3587,
+7,distance,1.0,0.3772,

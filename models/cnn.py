@@ -8,11 +8,8 @@ import utils
 import os
 
 """
-Predict class from image data using a (very simple) CNN.
-
-Hyperparameters:
-- regularization {"none", "L1", "L2", "elastic"}
-- reg_c [0.0, inf]
+(not implemented; was planning to include a CNN, but had a lot of
+trouble and felt it wasn't worth the effort)
 """
 
 MAX_EPOCHS = 50

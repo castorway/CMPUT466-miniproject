@@ -5,21 +5,20 @@ import os
 import numpy as np
 from pathlib import Path
 
+import models.linear_regression as linear_regression
 import models.k_nearest_neighbors as k_nearest_neighbors
 import models.logistic_regression as logistic_regression
 import models.multi_layer_perceptron as multi_layer_perceptron
 import models.naive_bayes as naive_bayes
 
+# get directories
 main_dir = Path(__file__).parent
 results_dir = main_dir / "results"
 data_dir = main_dir / "cifar-10-batches-py"
 os.makedirs(results_dir, exist_ok=True)
 
-# print(main_dir, results_dir, data_dir)
 
 def get_by_hparams(hparams, df):
-    mask =  False
-
     found = df.copy()
     for k, v in hparams.items():
         found = found[ found[k] == v ]
@@ -28,6 +27,11 @@ def get_by_hparams(hparams, df):
 
 
 def tune(module):
+    """
+    Run model defined in module for each hyperparameter combination defined in module.grid.
+    Save results in a CSV.
+    """
+    
     cols = list(module.grid.keys()) + ["train_acc", "val_acc", "test_acc"]
 
     # load csv
@@ -64,13 +68,17 @@ def tune(module):
         # save model weights
         model.save()
 
-    # save csv back
-    df.to_csv(csv_name, index=False)
+        # save csv back
+        df.to_csv(csv_name, index=False)
 
     return df
 
 
 def select_and_test(module):
+    """
+    Choose the best model (by validation accuracy) and test it on the test set.
+    """
+    
     # load csv
     csv_name = results_dir / f"{module.name}_tuning.csv"
     df = pd.read_csv(csv_name, index_col=None)
@@ -110,24 +118,22 @@ if __name__ == "__main__":
     # get data
     dataset = Dataset(
         data_dir,
-        # select_classes=[3, 5],
         seed=0
     )
 
-    # linear regression...
-    # title_print("TUNING LINEAR REGRESSION")
-    # df = tune(linear_regression)
-    # print(df)
+    # logistic regression...
+    title_print("TUNING LINEAR REGRESSION")
+    tune(linear_regression)
 
-    # title_print("TESTING LINEAR REGRESSION")
-    # select_and_test(linear_regression)
+    title_print("TESTING LINEAR REGRESSION")
+    select_and_test(linear_regression)
 
     # logistic regression...
-    # title_print("TUNING LOGISTIC REGRESSION")
-    # tune(logistic_regression)
+    title_print("TUNING LOGISTIC REGRESSION")
+    tune(logistic_regression)
 
-    # title_print("TESTING LOGISTIC REGRESSION")
-    # select_and_test(logistic_regression)
+    title_print("TESTING LOGISTIC REGRESSION")
+    select_and_test(logistic_regression)
 
     # k nearest neighbours...
     title_print("TUNING K NEAREST NEIGHBOURS")
@@ -136,10 +142,17 @@ if __name__ == "__main__":
     title_print("TESTING K NEAREST NEIGHBOURS")
     select_and_test(k_nearest_neighbors)
 
-    # CNN...
-    # title_print("TUNING MULTI LAYER PERCEPTRON")
-    # tune(multi_layer_perceptron)
+    # naive bayes...
+    title_print("TUNING NAIVE BAYES")
+    tune(naive_bayes)
 
-    # title_print("TESTING MULTI LAYER PERCEPTRON")
-    # select_and_test(multi_layer_perceptron)
+    title_print("TESTING NAIVE BAYES")
+    select_and_test(naive_bayes)
+
+    # MLP...
+    title_print("TUNING MULTI LAYER PERCEPTRON")
+    tune(multi_layer_perceptron)
+
+    title_print("TESTING MULTI LAYER PERCEPTRON")
+    select_and_test(multi_layer_perceptron)
 
