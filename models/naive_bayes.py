@@ -68,7 +68,7 @@ class Model():
 
 
 grid = {
-    "placeholder": [None]
+    "placeholder": ["placeholder"]
 }
 name = "naive_bayes"
 
